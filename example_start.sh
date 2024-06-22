@@ -1,0 +1,1 @@
+./MyProject.exe --magnet_offset 302.0 --time_offset 60 --scale=1.0 --simulate=false --fullscreen=false --replay=true --replay_file=/C:/Users/alexa/source/repos/rotating_display/data/raw_data_45v_3.csv --video_file="/C:/Users/alexa/source/OilPump3V_200FPS" --zero_angle_pos=0 --calibration_mode=false --wheel_mode=false
