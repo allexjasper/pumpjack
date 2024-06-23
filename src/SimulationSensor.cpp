@@ -1,7 +1,7 @@
 #include "SimulationSensor.h"
 #include <boost/log/trivial.hpp>
 #include <numbers>
-#include "windows.h"
+//#include "windows.h"
 #include <cmath>
 
 
@@ -55,6 +55,7 @@ void SimulationSensor::simulateThread(Sensor::Queue& queue)
        
 
         // Sleep for a short duration to control the loop speed
-        Sleep(5);
+        //Sleep(5);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }

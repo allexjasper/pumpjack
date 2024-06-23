@@ -20,7 +20,7 @@
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/trivial.hpp>
-#include <windows.h>
+//#include <windows.h>
 #include <numbers>
 #include <algorithm>
 #include <functional>
@@ -42,6 +42,7 @@
 #include <memory>
 #include "WheelSimulationSensor.h"
 #include "OpenGLRenderer.h"
+#include <SDL.h>
 
 
 
@@ -153,7 +154,9 @@ int main(int argc, char* argv[]) {
         ("calibration_mode,cm", po::value<bool>(&calibrationMode)->default_value(false), "Calibration mode (bool)")
         ("wheel_mode,wm", po::value<bool>(&wheelMode)->default_value(false), "Wheel mode (bool)");
 
-    
+     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        BOOST_LOG_TRIVIAL(info) << "SDL could not initialize! SDL Error:\n" << SDL_GetError();
+    }
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -231,13 +234,14 @@ int main(int argc, char* argv[]) {
         [&monitor](const std::string& title, TimeSeries& ts) {
             monitor.addData(title, ts);
         });
+    monitor.monitor();
     renderer.render([&monitor](const std::string& title, TimeSeries& ts) {
         monitor.addData(title, ts);
         });
 
-    monitor.monitor();
+    
 
-    OpenGLRenderer::blockingMainLoop();
+    //OpenGLRenderer::blockingMainLoop();
   
     
 

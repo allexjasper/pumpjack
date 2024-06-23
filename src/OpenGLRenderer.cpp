@@ -691,13 +691,10 @@ void OpenGLRenderer::blockingMainLoop()
 void OpenGLRenderer::render(std::function<void(const std::string, TimeSeries&)> monitor)
 {
 
-    _renderThread = std::thread([this, monitor]() {
-        renderThread(monitor);
-        });
-    _frameMatchingThread = std::thread([this]() {
-        frameMatchtingThread();
-        });
-  
+    //_renderThread = std::thread([this, monitor]() {
+    //    renderThread(monitor);
+    //    });
+    renderThread(monitor);
 
 
 }
