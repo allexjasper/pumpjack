@@ -41,7 +41,8 @@
 //#include "TimeSeriesTest.h"
 #include <memory>
 #include "WheelSimulationSensor.h"
-#include "OpenGLRenderer.h"
+#include "OilPumpRenderer.h"
+#include "WheelRenderer.h"
 #include <SDL.h>
 
 
@@ -208,34 +209,39 @@ int main(int argc, char* argv[]) {
 
     // start sensor reading, prediction and rendering
     std::unique_ptr<AbstractMovementPredictor> predictor;
+    std::unique_ptr<OpenGLRenderer> renderer;
     
    
-    if (wheelMode)
-    {
-        predictor = std::unique_ptr<AbstractMovementPredictor>(new WheelMovementPredictor(*g_sensor, std::chrono::milliseconds(1000),
-            std::chrono::milliseconds(80), std::chrono::milliseconds(time_offset)));
-    }
-    else
+    if (!wheelMode)
     {
         predictor = std::unique_ptr<AbstractMovementPredictor>(new OilPumpMovementPredictor(*g_sensor, std::chrono::milliseconds(1000), 
                                                                 std::chrono::milliseconds(80), std::chrono::milliseconds(time_offset)));
+        renderer = std::unique_ptr<OpenGLRenderer>(new OilPumpRenderer(videoFile, zeroAnglePos, fullscreen, scale, std::chrono::milliseconds(time_offset)));
     }
-    //GstRenderer renderer(videoFile, std::chrono::milliseconds(zeroAnglePos), fullscreen, scale, std::chrono::milliseconds(time_offset));
-    OpenGLRenderer renderer(videoFile, zeroAnglePos, fullscreen, scale, std::chrono::milliseconds(time_offset), !wheelMode);
+    else
+    {
+        renderer = std::unique_ptr<OpenGLRenderer>(new WheelRenderer(videoFile, fullscreen, scale, inbound_queue));
+    }
+    
+
+
+    
 
     
    
 
-    
-    predictor->predictMovement(inbound_queue, [&renderer](const TimeSeries& ts, std::chrono::milliseconds periodicity, TimeSeries::Timestamp lastPeriodBegin, std::chrono::milliseconds curRoationOffset, const std::string& overlay)
-        {
-            renderer.feedData(ts, periodicity, lastPeriodBegin, curRoationOffset, overlay);
-        }, 
-        [&monitor](const std::string& title, TimeSeries& ts) {
-            monitor.addData(title, ts);
-        });
+    if (predictor)
+    {
+        predictor->predictMovement(inbound_queue, [&renderer](const TimeSeries& ts, std::chrono::milliseconds periodicity, TimeSeries::Timestamp lastPeriodBegin, std::chrono::milliseconds curRoationOffset, const std::string& overlay)
+            {
+                renderer->feedData(ts, periodicity, lastPeriodBegin, curRoationOffset, overlay);
+            },
+            [&monitor](const std::string& title, TimeSeries& ts) {
+                monitor.addData(title, ts);
+            });
+    }
     monitor.monitor();
-    renderer.render([&monitor](const std::string& title, TimeSeries& ts) {
+    renderer->render([&monitor](const std::string& title, TimeSeries& ts) {
         monitor.addData(title, ts);
         });
 
@@ -245,8 +251,9 @@ int main(int argc, char* argv[]) {
   
     
 
-    renderer.shutdown();
-    predictor->shutdown();
+    renderer->shutdown();
+    if(predictor)
+        predictor->shutdown();
     monitor.shutdown();
     g_sensor->shutdown();
 

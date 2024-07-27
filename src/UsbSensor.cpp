@@ -91,8 +91,15 @@ void UsbSensor::readThread(Sensor::Queue& queue)
     const int AS5600_SCL = 19;
     const int AS5600_SDA = 22;
     const int AS5600_ADDRESS = 0x36;
-    const int ANGLE_H = 0x0E;
-    const int ANGLE_L = 0x0F;
+    
+    // computed angles with a hysteresis
+    //const int ANGLE_H = 0x0E;
+    //const int ANGLE_L = 0x0F;
+
+
+    const int ANGLE_H = 0x0C;
+    const int ANGLE_L = 0x0D;
+
     const int length = 2; // high and low bytes
 
     std::vector<uint8_t> buf(1 + length);

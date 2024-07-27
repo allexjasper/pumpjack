@@ -112,6 +112,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\local\glew-2.2.0\lib\Release\x64;C:\local\SDL2_image-2.8.2\lib\x64;C:\local\SDL2-2.28.4\lib\x64;C:\local\libusb-1.0.26-binaries\VS2015-x64\dll;C:\local\boost_1_83_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
       <AdditionalDependencies>libusb-1.0.lib;SDL2.lib;SDL2main.lib;glew32.lib;OpenGL32.lib;GLU32.lib;winmm.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)oil_pump2$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -132,12 +133,14 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\local\glew-2.2.0\lib\Release\x64;C:\local\SDL2_image-2.8.2\lib\x64;C:\local\SDL2-2.28.4\lib\x64;C:\local\libusb-1.0.26-binaries\VS2015-x64\dll;C:\local\boost_1_83_0\lib64-msvc-14.3</AdditionalLibraryDirectories>
       <AdditionalDependencies>libusb-1.0.lib;SDL2.lib;SDL2main.lib;glew32.lib;OpenGL32.lib;GLU32.lib;winmm.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)oil_pump$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\AbstractMovementPredictor.cpp" />
     <ClCompile Include="..\..\src\Monitor.cpp" />
     <ClCompile Include="..\..\src\OilPumpMovementPredictor.cpp" />
+    <ClCompile Include="..\..\src\OilPumpRenderer.cpp" />
     <ClCompile Include="..\..\src\oil_pump.cpp" />
     <ClCompile Include="..\..\src\OpenGLRenderer.cpp" />
     <ClCompile Include="..\..\src\Renderer.cpp" />
@@ -147,13 +150,14 @@
     <ClCompile Include="..\..\src\TimeSeries.cpp" />
     <ClCompile Include="..\..\src\UsbSensor.cpp" />
     <ClCompile Include="..\..\src\WheelMovementPredictor.cpp" />
+    <ClCompile Include="..\..\src\WheelRenderer.cpp" />
     <ClCompile Include="..\..\src\WheelSimulationSensor.cpp" />
-    <ClCompile Include="oil_pump2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\AbstractMovementPredictor.h" />
     <ClInclude Include="..\..\src\Monitor.h" />
     <ClInclude Include="..\..\src\OilPumpMovementPredictor.h" />
+    <ClInclude Include="..\..\src\OilPumpRenderer.h" />
     <ClInclude Include="..\..\src\OpenGLRenderer.h" />
     <ClInclude Include="..\..\src\Renderer.h" />
     <ClInclude Include="..\..\src\ReplaySensor.h" />
@@ -162,6 +166,7 @@
     <ClInclude Include="..\..\src\TimeSeries.h" />
     <ClInclude Include="..\..\src\UsbSensor.h" />
     <ClInclude Include="..\..\src\WheelMovementPredictor.h" />
+    <ClInclude Include="..\..\src\WheelRenderer.h" />
     <ClInclude Include="..\..\src\WheelSimulationSensor.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

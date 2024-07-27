@@ -5,7 +5,7 @@
 void Monitor::addData(const std::string& monitor, TimeSeries& ts)
 {
     //std::scoped_lock lock(_mutex);
-    //	_data[monitor].mergeInto(ts);
+   // 	_data[monitor].mergeInto(ts);
 }
 
 void Monitor::monitor()
@@ -21,7 +21,7 @@ void Monitor::monitorThread()
     std::unique_lock<std::mutex> lock(_mutex, std::defer_lock);
     while (true) {
         lock.lock();
-        if (_cv.wait_for(lock, std::chrono::seconds(180), [this] { return (bool)_shutdownRequested; })) {
+        if (_cv.wait_for(lock, std::chrono::seconds(60), [this] { return (bool)_shutdownRequested; })) {
             // Shutdown requested
             break;
         }

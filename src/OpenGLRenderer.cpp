@@ -14,21 +14,6 @@
 #include <gli.hpp>
 
 
-
-int positive_mod(int a, int b) {
-    int result = a % b;
-    if (result < 0) {
-        result += b;
-    }
-    return result;
-}
-
-typedef std::tuple<int, float, int> FrameMatch; // frame index, distance angle, distance time
-int distanceWeight(const FrameMatch& a)
-{
-    return std::get<1>(a) * 120.0 + std::get<2>(a);
-}
-
 TimeSeries OpenGLRenderer::createTextureTimeSeries(const std::vector<OpenGLRenderer::TextureInfo>& textures, std::chrono::milliseconds totalDuration, TimeSeries::Timestamp startTime) {
     TimeSeries timeSeries;
 
@@ -63,102 +48,6 @@ TimeSeries OpenGLRenderer::createTextureTimeSeries(const std::vector<OpenGLRende
     return timeSeries;
 }
 
-
-void OpenGLRenderer::frameMatchtingThread()
-{
-    while (!_shutdownRequested)
-    {
-        std::this_thread::sleep_for(std::chrono::milliseconds(20));
-    }
-}
-
-
-
-int OpenGLRenderer::findFrameToRender(std::optional<int> prevFrame, float angle, 
-                                    std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> refNow, TimeSeries& localTS)
-{
-
-
-
-
-    if (_angleMatchFrames)
-    {
-
-        //BOOST_LOG_TRIVIAL(info) << "cur rotation offset: " << _curRoationOffset << std::endl;
-        auto posInCurRotation = std::chrono::milliseconds ((refNow - _lastPeriodBegin + _curRoationOffset).count() % (_periodicity.count() - _curRoationOffset.count()));
-        //BOOST_LOG_TRIVIAL(info) << "posInCurRotation: " << posInCurRotation.count() << std::endl;
-        auto time_per_frame = (float)_periodicity.count() / (float)_textures.size();
-        float relative_pos = (float)posInCurRotation.count() / ((float)_periodicity.count() - (float)_curRoationOffset.count());
-        int frameToRenderRawNotWrapped = relative_pos * (float)_textures.size() + _zeroAnglePos;
-        int frameToRenderRaw = frameToRenderRawNotWrapped;
-
-        // to speed adjustment to avoid skips
-        int speedCompPrevFrame;
-        if (prevFrame ) 
-        {
-            int speedCompPrevFrame = * prevFrame;
-            if (std::abs(frameToRenderRawNotWrapped - *prevFrame) > _textures.size() / 2) // roll over case
-            {
-                frameToRenderRaw = frameToRenderRawNotWrapped;
-                if (speedCompPrevFrame < frameToRenderRaw)
-                {
-                    speedCompPrevFrame = *prevFrame + _textures.size();
-                }
-                else
-                {
-                    frameToRenderRaw += _textures.size();
-                }
-            }
-
-            if (std::abs(frameToRenderRaw - speedCompPrevFrame) * time_per_frame > 500) // skips bigger 500 ms are seeked
-            {
-                BOOST_LOG_TRIVIAL(info) << "seeking to due to large time gap: " << std::abs(frameToRenderRaw - speedCompPrevFrame) * time_per_frame << std::endl;
-            }
-            else
-            {
-                int maxSkip = (1000.0 / 40.0) / time_per_frame; // preserve at least 30 FPS
-                frameToRenderRaw = std::min(std::max(*prevFrame + 3, frameToRenderRaw), *prevFrame + maxSkip);
-            }
-
-        }
-
-
-
-
-
-
-
-
-        int frameToRender = positive_mod(frameToRenderRaw, _textures.size());;
-
-
-
-
-        //if (frameToRenderFromMatch)
-        //    frameToRender = *frameToRenderFromMatch;
-        
-        //BOOST_LOG_TRIVIAL(info) << "periodicity: " << _periodicity;
-        //BOOST_LOG_TRIVIAL(info) << "pos in period: " << posInCurRotation << " rel pos: " << relative_pos;
-        //BOOST_LOG_TRIVIAL(info) << "frame_to_render: " << frameToRender << " frame to render angel: " << std::get<1>(_textures[frameToRender]) << " rot angele: " << angle << " frame_as_per_time: " << frameToRenderRawNotWrapped << std::endl;
-        if (prevFrame && frameToRender - *prevFrame > 10)
-            BOOST_LOG_TRIVIAL(info) << "large frame skip from: " << *prevFrame << " to " << frameToRender << std::endl;
-        prevFrame = frameToRender;
-        return frameToRender;
-    }
-    else
-    {
-        if (prevFrame)
-        {
-            int frameToRender = (*prevFrame + 1) % _textures.size();
-            //BOOST_LOG_TRIVIAL(info) << "frame_to_render: " << frameToRender << std::endl;
-            return frameToRender;
-        }
-        else
-        {
-            return 0;
-        }
-    }
-}
 
 void OpenGLRenderer::CreateTexture(const OpenGLRenderer::FrameInfo& info)
 {
@@ -372,13 +261,9 @@ std::mutex OpenGLRenderer::_mutTimeSeries;
 std::atomic<bool> OpenGLRenderer::_quit(false);
 
 
-OpenGLRenderer::OpenGLRenderer(const std::string& fileName, int zeroAnglePos, bool fullscreen,
-    float scale, std::chrono::milliseconds transmissionDelay, bool angleMatchFrames) : _fileName(fileName),
-    _zeroAnglePos(zeroAnglePos),
+OpenGLRenderer::OpenGLRenderer(const std::string& fileName, bool fullscreen,  float scale) : _fileName(fileName),
     _fullscreen(fullscreen),
-    _scale(scale),
-    _transmissionDelay(transmissionDelay),
-    _angleMatchFrames(angleMatchFrames)
+    _scale(scale)
 {
     //gFileName = fileName;
     //gzeroAnglePos = zeroAnglePos;
@@ -404,8 +289,8 @@ void OpenGLRenderer::feedData(const TimeSeries& ts, std::chrono::milliseconds pe
 void OpenGLRenderer::shutdown()
 {
     _shutdownRequested = true;
-    _renderThread.join();
-    _frameMatchingThread.join();
+    //_renderThread.join();
+    //_frameMatchingThread.join();
 }
 
 //    if (!image.loadFromFile("C:\\Users\\alexa\\Downloads\\download.jpg"))
@@ -491,12 +376,14 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
                     // User requests quit
                     if (e.type == SDL_QUIT) {
                         _quit = true;
+                        _shutdownRequested = true;
                     }
                     // User presses a key
                     else if (e.type == SDL_KEYDOWN) {
                         switch (e.key.keysym.sym) {
                         case SDLK_q:
                             _quit = true;
+                            _shutdownRequested = true;
                             break;
                         default:
                             break;
@@ -518,24 +405,18 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
 
                 auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
 
-                int frame_to_render = 0;
-                auto ind = localTS.findIndex(now + _transmissionDelay);
-                if (ind)
-                {
-                    angle = std::get<0>(localTS.getVector()[*ind]);
-                    frame_to_render = findFrameToRender(prevFrame, angle, now + _transmissionDelay, localTS);
-
-                }
-
+                angle = findAngleToRender(now, localTS);
+                
+                auto frame_to_render = findFrameToRender(prevFrame, angle, now, localTS);
 
 
                 
                 
                 prevFrame = frame_to_render;
 
-                //TimeSeries renderedAngleTs;
-                //renderedAngleTs.add({ angle, std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()), 0 });
-                //monitor("rendered", renderedAngleTs);
+                TimeSeries renderedAngleTs;
+                renderedAngleTs.add({ angle, std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()), 0 });
+                monitor("rendered", renderedAngleTs);
 
 
 
