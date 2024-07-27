@@ -1,10 +1,9 @@
 #pragma once
 
 #include <atomic>
-#include "sensor.h"
+#include "Sensor.h"
 #include <thread>
 #include <atomic>
-#include "sensor.h"
 #include <thread>
 #include <tuple>
 

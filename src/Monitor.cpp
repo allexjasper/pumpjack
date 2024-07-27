@@ -4,8 +4,8 @@
 
 void Monitor::addData(const std::string& monitor, TimeSeries& ts)
 {
-    std::scoped_lock lock(_mutex);
-	_data[monitor].mergeInto(ts);
+    //std::scoped_lock lock(_mutex);
+    //	_data[monitor].mergeInto(ts);
 }
 
 void Monitor::monitor()

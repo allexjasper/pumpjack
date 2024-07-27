@@ -1,6 +1,6 @@
 #pragma once
 #include <atomic>
-#include "sensor.h"
+#include "Sensor.h"
 #include <thread>
 #include "AbstractMovementPredictor.h"
 

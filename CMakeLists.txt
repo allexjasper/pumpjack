@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Add the path to custom modules (if any)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+find_package(OpenGL REQUIRED)
+
 # Find Boost
 find_package(Boost REQUIRED COMPONENTS system filesystem log_setup log program_options regex)
 
@@ -83,6 +85,7 @@ target_link_libraries(${PROJECT_NAME}
     Boost::regex
     SDL2::SDL2
     ${LIBUSB_LIBRARIES}
+    ${OPENGL_LIBRARIES}
     GLEW::GLEW
     # GLM and GLI are header-only libraries, no linking needed
 )
