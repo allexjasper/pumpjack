@@ -33,3 +33,5 @@
 
 /build
 .DS_store
+/msvc/oil_pump2/.vs
+/msvc/oil_pump2/x64
