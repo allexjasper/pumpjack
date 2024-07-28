@@ -11,6 +11,10 @@
 class Monitor
 {
 public:
+	Monitor(bool doMonitor) : _doMonitor(doMonitor)
+	{
+
+	}
 	void addData(const std::string& monitor, TimeSeries& ts);
 
 	void monitor();
@@ -24,6 +28,7 @@ public:
 
 
 private:
+	bool _doMonitor;
 	std::mutex _mutex;
 	std::map<std::string, TimeSeries> _data;
 	std::atomic<bool> _shutdownRequested;

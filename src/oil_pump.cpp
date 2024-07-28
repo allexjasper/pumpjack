@@ -20,6 +20,16 @@
 #include <boost/log/utility/setup/file.hpp>
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/trivial.hpp>
+#include <boost/log/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/sinks/sync_frontend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/utility/setup/settings_parser.hpp>
 //#include <windows.h>
 #include <numbers>
 #include <algorithm>
@@ -91,15 +101,38 @@ typedef std::tuple<Timestamp, std::optional<float>, std::optional<float>> Render
 std::deque<RenderPoint> plot_data; // timestamp, angle raw, angle corrected
 std::mutex lock_plot_data;
 
+
+namespace logging = boost::log;
+namespace sinks = boost::log::sinks;
+namespace keywords = boost::log::keywords;
+
 // Initialize Boost::Log
-void initLogging() {
-    logging::add_file_log
-    (
-        keywords::file_name = "rotating_display_%N.log",
-        keywords::rotation_size = 10 * 1024 * 1024,
-        keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
-        keywords::format = "[%TimeStamp%]: %Message%"
-    );
+class NullSink : public sinks::basic_sink_backend<sinks::concurrent_feeding>
+{
+public:
+    void consume(logging::record_view const& rec) {}
+};
+
+void initLogging(bool doLog)
+{
+    if (doLog)
+    {
+        logging::add_file_log
+        (
+            keywords::file_name = "rotating_display_%N.log",
+            keywords::rotation_size = 10 * 1024 * 1024,
+            keywords::time_based_rotation = sinks::file::rotation_at_time_point(0, 0, 0),
+            keywords::format = "[%TimeStamp%]: %Message%"
+        );
+    }
+    else
+    {
+        typedef sinks::synchronous_sink<NullSink> sink_t;
+        boost::shared_ptr<sink_t> null_sink = boost::make_shared<sink_t>();
+        logging::core::get()->add_sink(null_sink);
+    }
+
+    logging::add_common_attributes();
 }
 
 
@@ -109,7 +142,6 @@ void initLogging() {
 Sensor* g_sensor;
 
 int main(int argc, char* argv[]) {
-    // Initialize GStreamer
 
     //TimeSeriesTest::testSliceOverlap();
    // TimeSeriesTest::testSlicePartialOverlap();
@@ -120,13 +152,6 @@ int main(int argc, char* argv[]) {
 
 
     reference_time = std::chrono::steady_clock::now();
-
-    initLogging();
-    logging::add_common_attributes();
-
-
-    BOOST_LOG_TRIVIAL(trace) << "Client starting";
-
 
     float magnet_offset;
     int time_offset;  // Change to integer
@@ -139,6 +164,7 @@ int main(int argc, char* argv[]) {
     int zeroAnglePos;
     bool calibrationMode;
     bool wheelMode;
+    bool doLog;
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -153,15 +179,22 @@ int main(int argc, char* argv[]) {
         ("video_file,vf", po::value<std::string>(&videoFile), "Video file (string)")
         ("zero_angle_pos,zap", po::value<int>(&zeroAnglePos)->default_value(0), "Video file (integer milliseconds)")
         ("calibration_mode,cm", po::value<bool>(&calibrationMode)->default_value(false), "Calibration mode (bool)")
-        ("wheel_mode,wm", po::value<bool>(&wheelMode)->default_value(false), "Wheel mode (bool)");
+        ("wheel_mode,wm", po::value<bool>(&wheelMode)->default_value(false), "Wheel mode (bool)")
+        ("log,log", po::value<bool>(&doLog)->default_value(false), "Log (bool)");
 
-     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        BOOST_LOG_TRIVIAL(info) << "SDL could not initialize! SDL Error:\n" << SDL_GetError();
-    }
+
+   
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
+
+    initLogging(doLog);
+   
+
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        BOOST_LOG_TRIVIAL(info) << "SDL could not initialize! SDL Error:\n" << SDL_GetError();
+    }
 
     if (vm.count("magnet_offset")) {
         BOOST_LOG_TRIVIAL(trace) << "Magnet Offset: " << magnet_offset << std::endl;
@@ -205,7 +238,7 @@ int main(int argc, char* argv[]) {
 
 
    
-    Monitor monitor;
+    Monitor monitor(doLog);
 
     // start sensor reading, prediction and rendering
     std::unique_ptr<AbstractMovementPredictor> predictor;

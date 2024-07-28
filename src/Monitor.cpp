@@ -4,8 +4,11 @@
 
 void Monitor::addData(const std::string& monitor, TimeSeries& ts)
 {
-    //std::scoped_lock lock(_mutex);
-   // 	_data[monitor].mergeInto(ts);
+    if (_doMonitor)
+    {
+        std::scoped_lock lock(_mutex);
+        _data[monitor].mergeInto(ts);
+    }
 }
 
 void Monitor::monitor()
@@ -27,30 +30,33 @@ void Monitor::monitorThread()
         }
         lock.unlock();
 
-        std::map<std::string, TimeSeries> local_data;
-
+        if (_doMonitor)
         {
-            std::scoped_lock scopedLock(_mutex);
-            local_data = _data;
-        }
 
-        // Plot the current data to a file
-        std::stringstream filename;
-        filename << "plot_" << i << ".gnuplot";
-        plot(filename.str(), local_data);
+            std::map<std::string, TimeSeries> local_data;
 
-        // Slice the data in the time series map to contain only the last 20 seconds
-        {
-            std::scoped_lock scopedLock(_mutex);
-            for (auto& entry : _data) {
-                auto& series = entry.second;
-                auto endTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
-                auto startTime = endTime - std::chrono::seconds(5);
-                auto slicedSeries = series.slice(startTime, endTime);
-                series = slicedSeries;
+            {
+                std::scoped_lock scopedLock(_mutex);
+                local_data = _data;
+            }
+
+            // Plot the current data to a file
+            std::stringstream filename;
+            filename << "plot_" << i << ".gnuplot";
+            plot(filename.str(), local_data);
+
+            // Slice the data in the time series map to contain only the last 20 seconds
+            {
+                std::scoped_lock scopedLock(_mutex);
+                for (auto& entry : _data) {
+                    auto& series = entry.second;
+                    auto endTime = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
+                    auto startTime = endTime - std::chrono::seconds(5);
+                    auto slicedSeries = series.slice(startTime, endTime);
+                    series = slicedSeries;
+                }
             }
         }
-
         i++;
     }
 }
