@@ -2,6 +2,13 @@
 #include <boost/log/trivial.hpp>
 
 int positive_mod(int a, int b) {
+
+    if (b == 0)
+    {
+        BOOST_LOG_TRIVIAL(info) << "mod by zero\n";
+        return 0;
+    }
+
     int result = a % b;
     if (result < 0) {
         result += b;
@@ -36,10 +43,15 @@ float OilPumpRenderer::findAngleToRender(std::chrono::time_point<std::chrono::st
 int OilPumpRenderer::findFrameToRender(std::optional<int> prevFrame, float angle,
     std::chrono::time_point<std::chrono::steady_clock, std::chrono::milliseconds> refNow, TimeSeries& localTS)
 {
+    if (_periodicity.count() == 0)
+        return 0;
+
     refNow += _transmissionDelay;
     //BOOST_LOG_TRIVIAL(info) << "cur rotation offset: " << _curRoationOffset << std::endl;
     auto posInCurRotation = std::chrono::milliseconds((refNow - _lastPeriodBegin + _curRoationOffset).count() % (_periodicity.count() - _curRoationOffset.count()));
     //BOOST_LOG_TRIVIAL(info) << "posInCurRotation: " << posInCurRotation.count() << std::endl;
+
+    
     auto time_per_frame = (float)_periodicity.count() / (float)_textures.size();
     float relative_pos = (float)posInCurRotation.count() / ((float)_periodicity.count() - (float)_curRoationOffset.count());
     int frameToRenderRawNotWrapped = relative_pos * (float)_textures.size() + _zeroAnglePos;

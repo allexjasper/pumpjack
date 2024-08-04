@@ -19,7 +19,7 @@ void ReplaySensor::replayThread(Sensor::Queue& queue)
     TimeSeries::Timestamp start_time = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
 
     auto i = _data.begin();
-    while(i < _data.end())
+    while(i < _data.end() && !_shutdownRequested)
     {
         
         auto& sample = *i;
@@ -36,7 +36,7 @@ void ReplaySensor::replayThread(Sensor::Queue& queue)
         TimeSeries::Timestamp curSlice = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
 
         // Replay all samples older than the current reference time within the 10 ms interval
-        while (time_point <= curSlice && i < _data.end())
+        while (time_point <= curSlice && i < _data.end() && !_shutdownRequested)
         {
             
             std::tie(angle, time_point, dummy) = *i;

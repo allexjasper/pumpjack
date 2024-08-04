@@ -70,6 +70,7 @@ void AbstractMovementPredictor::predictMovementThread(Sensor::Queue& inbound, Co
         if (sinePeriodTuple)
             periodicity = std::get<0>(*sinePeriodTuple);
 
+        //BOOST_LOG_TRIVIAL(info) << "inbound queue size" <<  inbound_ts.getVector().size() <<  std::endl;
 
         if (!periodicity)
         {

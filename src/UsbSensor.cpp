@@ -96,7 +96,7 @@ void UsbSensor::readThread(Sensor::Queue& queue)
     //const int ANGLE_H = 0x0E;
     //const int ANGLE_L = 0x0F;
 
-
+    // raw angles
     const int ANGLE_H = 0x0C;
     const int ANGLE_L = 0x0D;
 

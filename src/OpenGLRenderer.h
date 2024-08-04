@@ -23,7 +23,6 @@ public:
 	void shutdown();
 	void render(std::function<void(const std::string, TimeSeries&)> monitor);
 	void renderThread(std::function<void(const std::string, TimeSeries&)> monitor);
-	static void blockingMainLoop();
 	typedef std::tuple<std::string, float, int> FrameInfo;
 	typedef std::tuple<gli::texture*, float, int, int> TextureInfo;
 
@@ -43,7 +42,7 @@ protected:
 
 public:
 	std::atomic<bool> _shutdownRequested;
-	static std::atomic<bool> _quit;
+	//static std::atomic<bool> _quit;
 	std::thread _renderThread;
 	static TimeSeries _curTimeSeries;
 	static std::mutex _mutTimeSeries;

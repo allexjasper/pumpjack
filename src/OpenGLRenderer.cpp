@@ -258,12 +258,12 @@ void OpenGLRenderer::close() {
 TimeSeries OpenGLRenderer::_curTimeSeries;
 std::mutex OpenGLRenderer::_mutTimeSeries;
 
-std::atomic<bool> OpenGLRenderer::_quit(false);
 
 
 OpenGLRenderer::OpenGLRenderer(const std::string& fileName, bool fullscreen,  float scale) : _fileName(fileName),
     _fullscreen(fullscreen),
-    _scale(scale)
+    _scale(scale),
+    _shutdownRequested(false)
 {
     //gFileName = fileName;
     //gzeroAnglePos = zeroAnglePos;
@@ -337,12 +337,13 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
     }
     else {
         // Load media
+        BOOST_LOG_TRIVIAL(info) << "loading load media!\n";
         if (!loadMedia(_fileName) || _textures.empty()) {
             BOOST_LOG_TRIVIAL(info) << "Failed to load media!\n";
         }
         else {  
            
-          
+            BOOST_LOG_TRIVIAL(info) << "init view port!\n";
             // Render texture to the center of the screen
             auto Extent = std::get<0>(_textures.front())->extent(0);
             int textureWidth = Extent.x;
@@ -368,21 +369,24 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
             std::optional<int> prevFrame;
             // While application is running
             while (!_shutdownRequested) {
+
+                BOOST_LOG_TRIVIAL(info) << "starting frame!\n";
+
                 auto ts_frame_begin = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
                 
                 SDL_Event e;
-                
+
                 while (SDL_PollEvent(&e) != 0) {
+                    BOOST_LOG_TRIVIAL(info) << "poll event!\n";
                     // User requests quit
                     if (e.type == SDL_QUIT) {
-                        _quit = true;
+
                         _shutdownRequested = true;
                     }
                     // User presses a key
                     else if (e.type == SDL_KEYDOWN) {
                         switch (e.key.keysym.sym) {
                         case SDLK_q:
-                            _quit = true;
                             _shutdownRequested = true;
                             break;
                         default:
@@ -390,7 +394,7 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
                         }
                     }
                 }
-               
+            
 
                 float angle = 0.0f;
 
@@ -405,11 +409,11 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
 
                 auto now = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
 
+
                 angle = findAngleToRender(now, localTS);
                 
+
                 auto frame_to_render = findFrameToRender(prevFrame, angle, now, localTS);
-
-
                 
                 
                 prevFrame = frame_to_render;
@@ -423,6 +427,7 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
                 glClear(GL_COLOR_BUFFER_BIT);
                 glLoadIdentity();
 
+
                 renderQuad(std::get<3>(_textures[frame_to_render]), textureWidth, textureHeight, angle);
 
                 SDL_GL_SwapWindow(gWindow);
@@ -430,7 +435,7 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
 
                 auto ts_frame_end = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
 
-                BOOST_LOG_TRIVIAL(info) << "frame time: " << std::chrono::duration_cast<std::chrono::milliseconds>(ts_frame_end - ts_frame_begin).count() << std::endl;
+  //              BOOST_LOG_TRIVIAL(info) << "frame time: " << std::chrono::duration_cast<std::chrono::milliseconds>(ts_frame_end - ts_frame_begin).count() << std::endl;
             }
         }
 
@@ -440,14 +445,7 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
     close();
 }
 
-void OpenGLRenderer::blockingMainLoop()
-{
-    
-    while (!_quit) {
-        
-        SDL_Delay(200);
-    }
-}
+
 
 void OpenGLRenderer::render(std::function<void(const std::string, TimeSeries&)> monitor)
 {
