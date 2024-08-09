@@ -369,15 +369,11 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
             std::optional<int> prevFrame;
             // While application is running
             while (!_shutdownRequested) {
-
-                BOOST_LOG_TRIVIAL(info) << "starting frame!\n";
-
                 auto ts_frame_begin = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now());
                 
                 SDL_Event e;
 
                 while (SDL_PollEvent(&e) != 0) {
-                    BOOST_LOG_TRIVIAL(info) << "poll event!\n";
                     // User requests quit
                     if (e.type == SDL_QUIT) {
 
