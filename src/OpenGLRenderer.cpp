@@ -217,8 +217,8 @@ bool OpenGLRenderer::init() {
         // Initialize GLEW
         glewExperimental = GL_TRUE;
         if (glewInit() != GLEW_OK) {
-            std::cerr << "Failed to initialize GLEW" << std::endl;
-            return false;
+            std::cerr << "Failed to initialize GLEW but tolerating (know issue on non-X11 Lnux" << std::endl;
+            //return false;
         }
         
         if (gWindow == NULL) {
