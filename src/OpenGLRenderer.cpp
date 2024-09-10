@@ -92,7 +92,13 @@ void OpenGLRenderer::CreateTexture(const OpenGLRenderer::FrameInfo& info)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     gli::texture* p = &Texture;
 
-    TextureInfo ti = { p, std::get<1>(info), std::get<2>(info), (int)TextureName }; // gli::texture, angle, index, OpenGL texture
+    // Render texture to the center of the screen, assume all texture have same size. Use last one here
+    _textureWidth = Extent.x;
+    _textureHeight = Extent.y;
+
+    delete p;
+
+    TextureInfo ti = { std::get<1>(info), std::get<2>(info), (int)TextureName }; // angle, index, OpenGL texture
     _textures.push_back(ti);
 }
 
@@ -344,11 +350,7 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
         else {  
            
             BOOST_LOG_TRIVIAL(info) << "init view port!\n";
-            // Render texture to the center of the screen
-            auto Extent = std::get<0>(_textures.front())->extent(0);
-            int textureWidth = Extent.x;
-            int textureHeight = Extent.y;
-           
+            
 
             // Get the viewport dimensions
             GLint viewport[4];
@@ -424,7 +426,7 @@ void OpenGLRenderer::renderThread(std::function<void(const std::string, TimeSeri
                 glLoadIdentity();
 
 
-                renderQuad(std::get<3>(_textures[frame_to_render]), textureWidth, textureHeight, angle);
+                renderQuad(std::get<2>(_textures[frame_to_render]), _textureWidth, _textureHeight, angle);
 
                 SDL_GL_SwapWindow(gWindow);
                 SDL_Delay(5);

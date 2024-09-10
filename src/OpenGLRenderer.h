@@ -24,7 +24,7 @@ public:
 	void render(std::function<void(const std::string, TimeSeries&)> monitor);
 	void renderThread(std::function<void(const std::string, TimeSeries&)> monitor);
 	typedef std::tuple<std::string, float, int> FrameInfo;
-	typedef std::tuple<gli::texture*, float, int, int> TextureInfo;
+	typedef std::tuple<float, int, int> TextureInfo;
 
 protected:
 	void renderThread();
@@ -63,5 +63,7 @@ public:
 	TimeSeries::Timestamp _lastPeriodBegin;
 	std::chrono::milliseconds _curRoationOffset;
 	std::chrono::milliseconds _periodicity;
+	int _textureWidth;
+	int _textureHeight;
 
 };

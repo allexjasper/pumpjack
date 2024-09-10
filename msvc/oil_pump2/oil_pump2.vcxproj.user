@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>--magnet_offset 302.0 --time_offset 60 --scale=1.0 --simulate=false --fullscreen=false --replay=true --replay_file=C:\Users\alexa\source\repos\rotating_display\data\raw_data_45v_3.csv --video_file="C:\Users\alexa\source\OilPump3V_200FPS" --zero_angle_pos=0 --calibration_mode=false --wheel_mode=false --log=false</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--magnet_offset 302.0 --time_offset 60 --scale=1.0 --simulate=true --fullscreen=false --replay=false --replay_file=C:\Users\alexa\source\repos\rotating_display\data\raw_data_45v_3.csv --video_file="C:\Users\alexa\source\OilPump3V_200FPS" --zero_angle_pos=0 --calibration_mode=false --wheel_mode=false --log=false</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>--magnet_offset 302.0 --time_offset 60 --scale=1.0 --simulate=false --fullscreen=false --replay=true --replay_file=C:\Users\alexa\source\repos\rotating_display\data\raw_data_45v_3.csv --video_file="C:\Users\alexa\source\OilPump3V_200FPS" --zero_angle_pos=0 --calibration_mode=false --wheel_mode=false --log=false</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>--magnet_offset 302.0 --time_offset 60 --scale=1.0 --simulate=true --fullscreen=false --replay=false --replay_file=C:\Users\alexa\source\repos\rotating_display\data\raw_data_45v_3.csv --video_file="C:\Users\alexa\source\OilPump3V_200FPS" --zero_angle_pos=0 --calibration_mode=false --wheel_mode=false --log=false</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

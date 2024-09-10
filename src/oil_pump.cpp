@@ -127,9 +127,9 @@ void initLogging(bool doLog)
     }
     else
     {
- //       typedef sinks::synchronous_sink<NullSink> sink_t;
- //       boost::shared_ptr<sink_t> null_sink = boost::make_shared<sink_t>();
-//        logging::core::get()->add_sink(null_sink);
+        typedef sinks::synchronous_sink<NullSink> sink_t;
+        boost::shared_ptr<sink_t> null_sink = boost::make_shared<sink_t>();
+        logging::core::get()->add_sink(null_sink);
     }
 
     logging::add_common_attributes();
